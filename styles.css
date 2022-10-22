@@ -1,0 +1,269 @@
+/* //https://www.goingtointernet.com/2021/01/portfolio-website-css.html */
+
+* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0px;
+  padding: 0px;
+  background-color: #111111;
+  font-family: "Poppins", sans-serif;
+}
+ul {
+  list-style: none;
+}
+a {
+  text-decoration: none;
+}
+.navigation {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1px 40px;
+  z-index: 4;
+  background-image: linear-gradient(180deg, rgb(0, 0, 0) 20%, transparent);
+  background-color: #111111;
+}
+.menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0px;
+}
+
+.menu li {
+  padding: 20px;
+}
+.logo {
+  height: 33px;
+}
+
+.logo img {
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.menu li a {
+  color: #ffffffcc;
+}
+.About-me {
+  color: #46a0f5;
+}
+.About-me i {
+  margin-left: 4px;
+}
+.menu li a:hover {
+  color: #46a0f5;
+  transition: all ease 0.5s;
+}
+
+.About-me:hover {
+  color: #1a82e2;
+  transition: all ease 0.5s;
+}
+
+#main {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+#main::before {
+  content: "";
+  position: absolute;
+  width: 130%;
+  height: 100vh;
+  left: -20%;
+  top: -23%;
+  transform: rotate(-10deg);
+  background: linear-gradient(45deg, rgb(19, 19, 19) -10%, #141516);
+  z-index: -1;
+}
+
+.main-text {
+  position: absolute;
+  left: 15%;
+  top: 50%;
+  transform: translate(-15%, -50%);
+  width: 500px;
+}
+.main-text h1 {
+  color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: 600;
+  text-shadow: 2px 2px 30px rgba(0, 0, 0, 0.01);
+  margin: 0px;
+  line-height: 45px;
+}
+.main-text p {
+  color: #8a94a7c0;
+  font-size: 1rem;
+  margin: 0px;
+  margin-top: 10px;
+}
+.main-btn {
+  display: flex;
+  align-items: center;
+  margin-top: 25px;
+}
+
+.main-btn a {
+  width: 180px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  color: #ffffff;
+  box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.05);
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+}
+.resume-btn {
+  background: linear-gradient(90deg, #2788e2 -20%, #3b58b8);
+  margin-right: 30px;
+}
+.linkedln {
+  /* background: linear-gradient(90deg, #2788e2 -20%, #3b58b8);  */
+  background-color: #242830;
+}
+
+.linkedln:hover {
+  background-color: #0f7ce2;
+  transition: all ease 0.4s;
+}
+
+.images {
+  width: 550px;
+  height: 550px;
+  position: absolute;
+  top: 35%;
+  right: 32%;
+  transform: translate(-7%, -50%);
+  z-index: -1;
+}
+
+#skills {
+  width: 90%;
+  height: 100vh;
+}
+.skills-text-section {
+  width: 400px;
+}
+.skill-heading span {
+  color: #416cdf;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 1rem;
+}
+.skill-heading h2 {
+  color: #ffffff;
+  font-size: 3.3rem;
+  margin: 0px;
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+.skills-box-container {
+  margin-top: 30px;
+}
+.skill-box {
+  display: flex;
+  margin: 25px 0px;
+  /* height: 400px;
+  width: 70%; */
+
+  /* margin-left: 5%;
+  border: 2px solid white;
+  border-radius: 20px;
+  margin-bottom: 30%; */
+}
+.skill-box-icon {
+  margin-left: 12px;
+}
+.skill-box-icon i {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f011;
+  font-size: 1.1rem;
+  /* margin-left: 2%;
+  margin-top: 15%; */
+}
+.skill-box strong {
+  color: #ffffff;
+  margin: 0px;
+  font-weight: 400;
+  font-size: 0.9rem;
+  /* margin-left: 2%; */
+}
+
+.skill-box p {
+  color: #8a94a783;
+  font-size: 00.9rem;
+  /* margin-left: 2%; */
+}
+.fa-html5 {
+  color: #e06061;
+}
+
+.progress-line {
+  position: relative;
+  height: 5px;
+  width: 100%;
+  background-color: #1d1d1d;
+  border-radius: 10px;
+  box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.05),
+    0px 1px rgba(54, 54, 54, 0.8);
+}
+
+.progress-line span {
+  height: 100%;
+  width: 85%;
+  background: linear-gradient(90deg, #2788e2 -20%, #3b58b8);
+  position: absolute;
+  border-radius: 10px;
+}
+.progress-line.html span {
+  width: 80%;
+}
+
+.progress-line span::before {
+  position: absolute;
+  content: "";
+  right: 0px;
+  top: -10px;
+  height: 0px;
+  width: 0px;
+  border: 7px solid transparent;
+  border-bottom-width: 0px;
+  border-right-width: 0px;
+  border-top-color: rgb(20, 98, 243);
+}
+
+.progress-line span::after {
+  position: absolute;
+  right: 0px;
+  top: -28px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 400;
+  background-color: rgb(20, 98, 243);
+  padding: 1px 8px;
+  border-radius: 3px;
+}
+.progress-line.html span::after {
+  content: "80%";
+}
