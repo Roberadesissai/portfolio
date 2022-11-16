@@ -319,17 +319,17 @@ a {
 }
 
 .progress-line.aws span::after {
-  content: "85%";
+  content: "ongoing";
 }
 .progress-line.aws span {
-  width: 85%;
+  width: 25%;
 }
 
 .progress-line.react span::after {
-  content: "85%";
+  content: "ongoning";
 }
 .progress-line.react span {
-  width: 85%;
+  width: 30%;
 }
 
 .progress-line.css span::after {
@@ -340,10 +340,10 @@ a {
 }
 
 .progress-line.js span::after {
-  content: "100%";
+  content: "ongoing%";
 }
 .progress-line.js span {
-  width: 100%;
+  width: 30%;
 }
 
 #introduction {
