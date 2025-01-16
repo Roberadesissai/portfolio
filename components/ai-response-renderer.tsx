@@ -10,6 +10,8 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface AIResponseRendererProps {
   content: string;
@@ -85,9 +87,23 @@ export function AIResponseRenderer({ content }: AIResponseRendererProps) {
               )}
             </Button>
           </div>
-          <pre className="p-4 bg-zinc-950 overflow-x-auto">
-            <code className={`language-${language} text-zinc-200`}>{code}</code>
-          </pre>
+          <div className="bg-zinc-950">
+            <SyntaxHighlighter
+              language={language}
+              style={oneDark}
+              customStyle={{
+                margin: 0,
+                padding: "1rem",
+                background: "transparent",
+              }}
+              showLineNumbers={true}
+              wrapLines={false}
+              wrapLongLines={false}
+              useInlineStyles={true}
+            >
+              {code}
+            </SyntaxHighlighter>
+          </div>
         </div>
       );
 
