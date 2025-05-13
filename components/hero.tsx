@@ -74,12 +74,7 @@ export function Hero() {
               transition={{ delay: 0.4 }}
               className="text-lg text-muted-foreground leading-relaxed"
             >
-              I&apos;m a Software Engineer and AI Specialist passionate about
-              building intelligent solutions. I specialize in creating
-              innovative applications that blend advanced AI technologies with
-              strong software engineering practices. My focus is on turning
-              complex ideas into impactful, real-world solutions that push the
-              boundaries of technology.{" "}
+              I&apos;m a Software Engineer, AI Specialist, and Hardware Enthusiast passionate about building intelligent, end-to-end solutions. I specialize in creating innovative applications that merge advanced AI technologies, robust software engineering, and hands-on hardware integration. My focus is on turning complex ideas into impactful, real-world systems that push the boundaries of both digital and physical technology.{" "}
               <Link
                 href="/ai-guide"
                 className="inline-flex items-center gap-1.5 px-2 py-0.5 font-medium text-blue-500 bg-blue-500/10 rounded-md hover:bg-blue-500/20 transition-colors group"
