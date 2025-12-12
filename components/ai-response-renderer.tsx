@@ -251,6 +251,11 @@ export function AIResponseRenderer({ content }: AIResponseRendererProps) {
         <div key={`part-${partIndex}`} className="space-y-4">
           {lines
             .map((line, lineIndex) => {
+              // Skip empty lines
+              if (!line.trim()) {
+                return <div key={`empty-${partIndex}-${lineIndex}`} className="h-2" />;
+              }
+
               // Process table
               if (line.includes("|")) {
                 const tableContent = lines.slice(lineIndex).join("\n");
@@ -261,18 +266,40 @@ export function AIResponseRenderer({ content }: AIResponseRendererProps) {
                   });
               }
 
-              // Process bullet points with icons
-              if (line.trim().startsWith("* ")) {
-                const processedLine = processIcons(processLinks(line.slice(2)));
+              // Process bold headings (lines that are **text**)
+              const boldHeadingMatch = line.match(/^\*\*([^*]+)\*\*(.*)$/);
+              if (boldHeadingMatch) {
+                const headingText = boldHeadingMatch[1];
+                const restOfLine = boldHeadingMatch[2];
+                const processedText = processText(headingText + restOfLine);
+                
+                return (
+                  <motion.h4
+                    key={`bold-heading-${partIndex}-${lineIndex}`}
+                    className="font-bold text-lg text-foreground"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: lineIndex * 0.05 }}
+                  >
+                    {processedText}
+                  </motion.h4>
+                );
+              }
+
+              // Process bullet points (both * and - styles) with icons
+              const bulletMatch = line.match(/^\s*[-*]\s+(.+)$/);
+              if (bulletMatch) {
+                const bulletText = bulletMatch[1];
+                const processedLine = processIcons(processLinks(bulletText));
                 return (
                   <motion.div
                     key={`bullet-${partIndex}-${lineIndex}`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: lineIndex * 0.1 }}
-                    className="flex items-start gap-2"
+                    transition={{ delay: lineIndex * 0.05 }}
+                    className="flex items-start gap-3"
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2" />
+                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
                     <span className="text-muted-foreground">
                       {processedLine}
                     </span>
@@ -286,7 +313,7 @@ export function AIResponseRenderer({ content }: AIResponseRendererProps) {
                 if (!headingMatch) return null;
 
                 const level = headingMatch[0].length;
-                const text = line.slice(level + 1);
+                const text = line.slice(level + 1).trim();
                 const processedText = processIcons(text);
 
                 return (
@@ -329,24 +356,73 @@ export function AIResponseRenderer({ content }: AIResponseRendererProps) {
     if (React.isValidElement(text)) return text;
     if (typeof text !== "string") return <>{text}</>;
 
-    const parts = text.split(/({bold=.*?})/);
-    if (parts.length === 1) return <>{text}</>;
+    // Handle markdown bold (**text**) patterns
+    const parts: (string | React.ReactElement)[] = [];
+    let lastIndex = 0;
+    
+    // Match **text** patterns (greedy and non-greedy)
+    const boldRegex = /\*\*([^*]+?)\*\*/g;
+    let match;
 
-    return (
-      <>
-        {parts.map((part, index) => {
-          const boldMatch = part.match(/{bold=(.*?)}/);
-          if (boldMatch) {
-            return (
-              <span key={index} className="font-bold">
-                {boldMatch[1]}
-              </span>
-            );
-          }
-          return part;
-        })}
-      </>
-    );
+    while ((match = boldRegex.exec(text)) !== null) {
+      // Add text before match
+      if (match.index > lastIndex) {
+        const beforeText = text.slice(lastIndex, match.index);
+        parts.push(beforeText);
+      }
+
+      // Add bold text
+      const boldText = match[1];
+      parts.push(
+        <strong key={`bold-${match.index}`} className="font-bold text-foreground">
+          {boldText}
+        </strong>
+      );
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    // If we found bold patterns, return them
+    if (parts.length > 1) {
+      return <>{parts}</>;
+    }
+
+    // If no bold patterns, check for custom {bold=text} format
+    const customBoldRegex = /\{bold=([^}]+)\}/g;
+    let customMatch;
+    const customParts: (string | React.ReactElement)[] = [];
+    let customLastIndex = 0;
+
+    while ((customMatch = customBoldRegex.exec(text)) !== null) {
+      if (customMatch.index > customLastIndex) {
+        customParts.push(text.slice(customLastIndex, customMatch.index));
+      }
+
+      const boldText = customMatch[1];
+      customParts.push(
+        <span key={`custom-bold-${customMatch.index}`} className="font-bold text-foreground">
+          {boldText}
+        </span>
+      );
+
+      customLastIndex = customMatch.index + customMatch[0].length;
+    }
+
+    if (customLastIndex < text.length) {
+      customParts.push(text.slice(customLastIndex));
+    }
+
+    if (customParts.length > 1) {
+      return <>{customParts}</>;
+    }
+
+    // If no bold found, return as-is
+    return <>{text}</>;
   };
 
   return <div className="space-y-4">{processContentByType(content)}</div>;

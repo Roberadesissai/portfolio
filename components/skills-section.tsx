@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Code2,
   Brain,
@@ -259,36 +260,95 @@ export function SkillsSection() {
         {/* Category Filter and View Toggle */}
         <div className="flex flex-col xs:flex-row justify-between items-center mb-8 xs:mb-10 sm:mb-12 gap-4 xs:gap-6">
           {/* Category Filter */}
-          <div className="w-full xs:w-auto overflow-x-auto pb-2 xs:pb-0">
-            <div className="inline-flex bg-primary/5 p-1 xs:p-1.5 rounded-2xl backdrop-blur-sm min-w-full xs:min-w-0">
-              {categories.slice(0, 5).map((category) => (
-                <motion.button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className="relative px-3 xs:px-4 py-1.5 xs:py-2 text-xs xs:text-sm font-medium transition-all duration-300 whitespace-nowrap"
+          <div className="w-full xs:w-auto">
+            {/* Mobile Dropdown */}
+            <div className="relative group md:hidden w-full">
+              <button className="w-full inline-flex items-center justify-between gap-2 bg-primary/5 hover:bg-primary/10 border border-primary/10 px-6 py-2.5 rounded-2xl backdrop-blur-sm font-medium text-sm transition-all duration-300">
+                <span>{selectedCategory}</span>
+                <svg className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              <div className="absolute top-full left-0 right-0 mt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  className="bg-background/95 backdrop-blur-xl border border-primary/10 rounded-2xl shadow-xl overflow-hidden"
                 >
-                  {selectedCategory === category && (
-                    <motion.div
-                      layoutId="categoryBackground"
-                      className="absolute inset-0 bg-primary/10 rounded-xl"
-                      transition={{
-                        type: "spring",
-                        bounce: 0.2,
-                        duration: 0.6,
-                      }}
-                    />
-                  )}
-                  <span
-                    className={`relative z-10 ${
-                      selectedCategory === category
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}
+                  {/* Gradient background */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+
+                  {/* Menu Items */}
+                  <nav className="relative flex flex-col p-2 max-h-96 overflow-y-auto">
+                    {categories.map((category, index) => (
+                      <motion.button
+                        key={category}
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.02 }}
+                        onClick={() => {
+                          setSelectedCategory(category);
+                        }}
+                        className="relative group/item text-left"
+                      >
+                        <div
+                          className={cn(
+                            "px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300 flex items-center justify-between",
+                            selectedCategory === category
+                              ? "text-primary bg-primary/10"
+                              : "text-muted-foreground group-hover/item:text-primary"
+                          )}
+                        >
+                          <span>{category}</span>
+                          {selectedCategory === category && (
+                            <motion.span
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-2 h-2 rounded-full bg-primary"
+                            />
+                          )}
+                        </div>
+                      </motion.button>
+                    ))}
+                  </nav>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Desktop Horizontal Buttons */}
+            <div className="hidden md:block overflow-x-auto pb-2 xs:pb-0">
+              <div className="inline-flex bg-primary/5 p-1 sm:p-1.5 rounded-2xl backdrop-blur-sm min-w-full xs:min-w-0">
+                {categories.slice(0, 5).map((category) => (
+                  <motion.button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className="relative px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all duration-300 whitespace-nowrap"
                   >
-                    {category}
-                  </span>
-                </motion.button>
-              ))}
+                    {selectedCategory === category && (
+                      <motion.div
+                        layoutId="categoryBackground"
+                        className="absolute inset-0 bg-primary/10 rounded-xl"
+                        transition={{
+                          type: "spring",
+                          bounce: 0.2,
+                          duration: 0.6,
+                        }}
+                      />
+                    )}
+                    <span
+                      className={`relative z-10 ${
+                        selectedCategory === category
+                          ? "text-primary"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {category}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -317,42 +377,51 @@ export function SkillsSection() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
+                  className="h-full"
                 >
-                  <Card
-                    className="relative overflow-hidden group border border-primary/10 bg-background/50 backdrop-blur-sm hover:border-primary/20 h-full flex flex-col"
-                    onMouseEnter={() => setHoveredSkill(skill.name)}
-                    onMouseLeave={() => setHoveredSkill(null)}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
+                    className="h-full"
                   >
-                    {/* Gradient effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                    <Card
+                      className="relative overflow-hidden group border border-primary/10 bg-background/50 backdrop-blur-sm h-full flex flex-col"
+                      onMouseEnter={() => setHoveredSkill(skill.name)}
+                      onMouseLeave={() => setHoveredSkill(null)}
+                    >
+                      {/* Gradient effect */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-all duration-500" />
 
-                    <div className="p-4 xs:p-6 flex flex-col h-full relative">
-                      {/* Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <Badge
-                            variant="secondary"
-                            className="mb-2 bg-primary/5 text-xs"
+                      <div className="p-4 xs:p-6 flex flex-col h-full relative">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <Badge
+                              variant="secondary"
+                              className="mb-2 bg-primary/5 text-xs"
+                            >
+                              {skill.category}
+                            </Badge>
+                            <h3 className="text-base xs:text-lg font-semibold mb-1 group-hover:text-primary transition-colors">
+                              {skill.name}
+                            </h3>
+                          </div>
+                          <motion.div 
+                            className="p-2 bg-primary/5 rounded-lg group-hover:bg-primary/10 transition-colors duration-300"
+                            whileHover={{ scale: 1.1 }}
                           >
-                            {skill.category}
-                          </Badge>
-                          <h3 className="text-base xs:text-lg font-semibold mb-1 group-hover:text-primary transition-colors">
-                            {skill.name}
-                          </h3>
+                            <Icon className="w-4 h-4 xs:w-5 xs:h-5" />
+                          </motion.div>
                         </div>
-                        <div className="p-2 bg-primary/5 rounded-lg group-hover:bg-primary/10 transition-colors duration-300">
-                          <Icon className="w-4 h-4 xs:w-5 xs:h-5" />
-                        </div>
-                      </div>
 
-                      {/* Description */}
-                      <p className="text-xs xs:text-sm text-muted-foreground leading-relaxed mb-4 flex-grow">
-                        {skill.description}
-                      </p>
+                        {/* Description */}
+                        <p className="text-xs xs:text-sm text-muted-foreground leading-relaxed mb-4 flex-grow">
+                          {skill.description}
+                        </p>
 
-                      {/* Detailed View Content */}
-                      {detailView && (
-                        <div className="space-y-4">
+                        {/* Detailed View Content */}
+                        {detailView && (
+                          <div className="space-y-4">
                           <div className="space-y-2">
                             <div className="flex items-center justify-between text-xs xs:text-sm">
                               <span className="text-muted-foreground">
@@ -444,6 +513,7 @@ export function SkillsSection() {
                       )}
                     </div>
                   </Card>
+                  </motion.div>
                 </motion.div>
               );
             })}

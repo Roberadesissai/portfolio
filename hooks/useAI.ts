@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { generatePrompt } from "@/utils/ai-prompts";
 import { analyzeGithubRepo } from "@/utils/github-service";
+import {
+  cleanAndFormatResponse,
+  formatStreamingChunk,
+  finalizeStreamingResponse,
+} from "@/utils/formatting";
 
 export function useAI() {
   const [isLoading, setIsLoading] = useState(false);
@@ -238,7 +243,9 @@ ${Object.entries(repoData.languages)
       }
 
       const data = await response.json();
-      return data.choices[0].message.content;
+      const content = data.choices[0].message.content;
+      // Clean and format the response
+      return cleanAndFormatResponse(content);
     } catch (error) {
       setError("Failed to generate response. Please try again.");
       return null;
@@ -247,5 +254,89 @@ ${Object.entries(repoData.languages)
     }
   };
 
-  return { generateResponse, isLoading, error };
+  const generateStreamingResponse = async (
+    prompt: string,
+    type: "chat" | "analyze" | "generate" | "github",
+    onChunk?: (chunk: string) => void
+  ) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      if (type === "github") {
+        const repoUrl = prompt
+          .replace("Analyze this GitHub repository: ", "")
+          .trim();
+        const repoData = await analyzeGithubRepo(repoUrl);
+        const result = await formatGithubAnalysis(repoData);
+        onChunk?.(result);
+        return result;
+      }
+
+      const promptConfig = generatePrompt(type, prompt);
+
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...promptConfig,
+          stream: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate streaming response");
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+
+      if (!reader) {
+        throw new Error("Response body is not readable");
+      }
+
+      // Read the stream
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.text) {
+                const formattedChunk = formatStreamingChunk(parsed.text);
+                fullText += formattedChunk;
+                onChunk?.(formattedChunk);
+              }
+            } catch (e) {
+              // Skip parsing errors for malformed JSON
+              console.error("Error parsing chunk:", e);
+            }
+          }
+        }
+      }
+
+      // Finalize the response with proper formatting
+      const finalText = finalizeStreamingResponse(fullText);
+      return finalText;
+    } catch (error) {
+      console.error("Streaming error:", error);
+      setError("Failed to generate streaming response. Please try again.");
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { generateResponse, generateStreamingResponse, isLoading, error };
 }

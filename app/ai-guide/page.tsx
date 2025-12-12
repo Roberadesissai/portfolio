@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export default function AIGuidePage() {
-  const { generateResponse, isLoading, error } = useAI();
+  const { generateResponse, generateStreamingResponse, isLoading, error } = useAI();
   const [activeTab, setActiveTab] = useState<
     "chat" | "analyze" | "generate" | "github"
   >("chat");
@@ -35,6 +35,7 @@ export default function AIGuidePage() {
   const [response, setResponse] = useState("");
   const aiSectionRef = useRef<HTMLDivElement>(null);
   const [isFineTuning, setIsFineTuning] = useState(false);
+  const [streamingResponse, setStreamingResponse] = useState("");
 
   useEffect(() => {
     const pendingPrompt = localStorage.getItem("pendingPrompt");
@@ -45,14 +46,17 @@ export default function AIGuidePage() {
       localStorage.removeItem("pendingPrompt");
       localStorage.removeItem("promptType");
 
-      // Generate response for the stored prompt
-      generateResponse(pendingPrompt, promptType as "chat" | "analyze");
+      // Generate response for the stored prompt with streaming
+      generateStreamingResponse(pendingPrompt, promptType as "chat" | "analyze", (chunk) => {
+        setStreamingResponse((prev) => prev + chunk);
+      });
     }
-  }, [generateResponse]);
+  }, [generateStreamingResponse]);
 
   const scrollToAI = () => {
     aiSectionRef.current?.scrollIntoView({ behavior: "smooth" });
     setResponse(""); // Clear previous response
+    setStreamingResponse(""); // Clear streaming response
   };
 
   const handleQuickPrompt = async (
@@ -62,14 +66,18 @@ export default function AIGuidePage() {
     try {
       setActiveTab(type);
       setInput(prompt);
+      setStreamingResponse(""); // Reset streaming response
 
       // Scroll to AI section first
       scrollToAI();
 
-      // Generate response with error handling
-      const result = await generateResponse(prompt, type);
+      // Generate streaming response
+      const result = await generateStreamingResponse(prompt, type, (chunk) => {
+        setStreamingResponse((prev) => prev + chunk);
+      });
       if (result) {
         setResponse(result);
+        setStreamingResponse(""); // Clear streaming display once complete
       }
     } catch (err) {
       console.error("Error processing quick prompt:", err);
@@ -84,9 +92,15 @@ export default function AIGuidePage() {
     if (!input.trim()) return;
 
     try {
-      const result = await generateResponse(input, activeTab);
+      setStreamingResponse(""); // Reset streaming response
+      
+      // Use streaming response for better UX
+      const result = await generateStreamingResponse(input, activeTab, (chunk) => {
+        setStreamingResponse((prev) => prev + chunk);
+      });
       if (result) {
         setResponse(result);
+        setStreamingResponse(""); // Clear streaming display once complete
       }
     } catch (err) {
       console.error("Error generating response:", err);
@@ -101,12 +115,19 @@ export default function AIGuidePage() {
     if (!githubUrl.trim()) return;
 
     try {
-      const result = await generateResponse(
+      setStreamingResponse(""); // Reset streaming response
+      
+      // Use streaming response for better UX
+      const result = await generateStreamingResponse(
         `Analyze this GitHub repository: ${githubUrl}`,
-        "github"
+        "github",
+        (chunk) => {
+          setStreamingResponse((prev) => prev + chunk);
+        }
       );
       if (result) {
         setResponse(result);
+        setStreamingResponse(""); // Clear streaming display once complete
       }
     } catch (err) {
       console.error("Error analyzing GitHub repo:", err);
@@ -152,14 +173,10 @@ export default function AIGuidePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative pt-32 md:pt-32 pb-16 md:pb-20">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-blue-500/10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-background mix-blend-overlay" />
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className="absolute -top-[40%] -left-[20%] w-[70%] h-[70%] rounded-full bg-blue-500/10 blur-3xl" />
-          <div className="absolute -top-[40%] -right-[20%] w-[70%] h-[70%] rounded-full bg-purple-500/10 blur-3xl" />
-          <div className="absolute top-[20%] left-[20%] w-[60%] h-[60%] rounded-full bg-pink-500/10 blur-3xl" />
-        </div>
+      <section className="relative pt-32 md:pt-32 pb-16 md:pb-20 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
         <div className="container relative px-4 md:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -351,8 +368,15 @@ export default function AIGuidePage() {
             )}
 
             {/* Response Section */}
-            {isLoading ? (
-              <LoadingAnimation />
+            {isLoading || streamingResponse ? (
+              <div className="mt-4 md:mt-6 space-y-4">
+                {streamingResponse && (
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <AIResponseRenderer content={streamingResponse} type={activeTab as "chat" | "analyze" | "generate"} />
+                  </div>
+                )}
+                {isLoading && !streamingResponse && <LoadingAnimation />}
+              </div>
             ) : (
               <>
                 {error && (
@@ -362,7 +386,7 @@ export default function AIGuidePage() {
                 )}
 
                 {response && (
-                  <div className="mt-4 md:mt-6">
+                  <div className="mt-4 md:mt-6 prose prose-sm dark:prose-invert max-w-none">
                     <AIResponseRenderer content={response} type={activeTab as "chat" | "analyze" | "generate"} />
                   </div>
                 )}

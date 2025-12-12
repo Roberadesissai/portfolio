@@ -5,9 +5,9 @@ import { Instagram, Github, Linkedin,Sparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const socialLinks = [
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Github, href: "#", label: "Github" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" }
+  { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
+  { icon: Github, href: "https://github.com/Roberadesissai", label: "Github" },
+  { icon: Linkedin, href: "https://www.linkedin.com/in/roberadesissa/", label: "LinkedIn" }
 ]
 
 const navLinks = [

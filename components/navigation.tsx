@@ -3,17 +3,11 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Moon, Sun, Sparkles, Menu } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Moon, Sun, Sparkles, Menu, X } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-} from "@/components/ui/sheet";
 
 export function Navigation() {
   const pathname = usePathname();
@@ -21,6 +15,7 @@ export function Navigation() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -147,36 +142,125 @@ export function Navigation() {
               </nav>
 
               <div className="flex items-center gap-4">
-                <Sheet>
-                  <SheetTrigger asChild className="md:hidden">
-                    <Button variant="ghost" size="icon" className="h-9 w-9">
-                      <Menu className="h-5 w-5" />
-                      <span className="sr-only">Toggle menu</span>
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-full max-w-xs">
-                    <SheetTitle className="text-left">Navigation</SheetTitle>
-                    <nav className="flex flex-col gap-4 mt-8">
-                      {navLinks.map((link) => (
-                        <button
-                          key={link.href}
-                          onClick={() => {
-                            handleNavigation(link.href);
-                            // Close sheet after navigation
-                          }}
-                          className={cn(
-                            "flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors",
-                            isActive(link.href)
-                              ? "bg-primary/10 text-primary"
-                              : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
-                          )}
+                {/* Mobile Menu Dropdown */}
+                <div className="relative md:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9"
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  >
+                    <AnimatePresence mode="wait">
+                      {mobileMenuOpen ? (
+                        <motion.div
+                          key="close"
+                          initial={{ rotate: -90, opacity: 0 }}
+                          animate={{ rotate: 0, opacity: 1 }}
+                          exit={{ rotate: 90, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
                         >
-                          {link.label}
-                        </button>
-                      ))}
-                    </nav>
-                  </SheetContent>
-                </Sheet>
+                          <X className="h-5 w-5" />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="menu"
+                          initial={{ rotate: 90, opacity: 0 }}
+                          animate={{ rotate: 0, opacity: 1 }}
+                          exit={{ rotate: -90, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Menu className="h-5 w-5" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <span className="sr-only">Toggle menu</span>
+                  </Button>
+
+                  {/* Dropdown Menu */}
+                  <AnimatePresence>
+                    {mobileMenuOpen && (
+                      <>
+                        {/* Backdrop */}
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="fixed inset-0 z-40 md:hidden"
+                        />
+
+                        {/* Dropdown Panel */}
+                        <motion.div
+                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          transition={{
+                            type: "spring",
+                            bounce: 0.3,
+                            duration: 0.3,
+                          }}
+                          className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-primary/10 bg-background/95 backdrop-blur-xl shadow-xl overflow-hidden"
+                        >
+                          {/* Gradient background */}
+                          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+
+                          {/* Menu Items */}
+                          <nav className="relative flex flex-col p-2">
+                            {navLinks.map((link, index) => (
+                              <motion.button
+                                key={link.href}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                onClick={() => {
+                                  handleNavigation(link.href);
+                                  setMobileMenuOpen(false);
+                                }}
+                                className="relative group"
+                              >
+                                <div
+                                  className={cn(
+                                    "px-4 py-3 text-left text-sm font-medium rounded-lg transition-all duration-300",
+                                    isActive(link.href)
+                                      ? "text-primary"
+                                      : "text-muted-foreground group-hover:text-primary"
+                                  )}
+                                >
+                                  {isActive(link.href) && (
+                                    <motion.div
+                                      layoutId="mobileActiveBackground"
+                                      className="absolute inset-0 bg-primary/10 rounded-lg -z-10"
+                                      transition={{
+                                        type: "spring",
+                                        bounce: 0.2,
+                                        duration: 0.4,
+                                      }}
+                                    />
+                                  )}
+                                  {!isActive(link.href) && (
+                                    <motion.div
+                                      className="absolute inset-0 bg-primary/5 rounded-lg -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    />
+                                  )}
+                                  <div className="flex items-center justify-between">
+                                    <span>{link.label}</span>
+                                    {isActive(link.href) && (
+                                      <motion.span
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="w-2 h-2 rounded-full bg-primary"
+                                      />
+                                    )}
+                                  </div>
+                                </div>
+                              </motion.button>
+                            ))}
+                          </nav>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 <Button
                   variant="outline"

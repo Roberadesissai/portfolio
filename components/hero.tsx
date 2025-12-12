@@ -18,8 +18,8 @@ import { Badge } from "@/components/ui/badge";
 
 export function Hero() {
   const socialLinks = [
-    { icon: Github, href: "https://github.com", label: "GitHub" },
-    { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
+    { icon: Github, href: "https://github.com/Roberadesissai", label: "GitHub" },
+    { icon: Linkedin, href: "https://www.linkedin.com/in/roberadesissa/", label: "LinkedIn" },
     { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
   ];
 
